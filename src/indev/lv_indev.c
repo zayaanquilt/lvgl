@@ -1581,6 +1581,13 @@ static void indev_proc_release(lv_indev_t * indev)
             indev_scroll_throw_anim_start(indev);
         }
 
+        /*Collapse the 2-frame gap at release: immediately run the throw
+         *handler (which advances one step / creates the snap animation)
+         *and trigger one animation refresh so the first snap frame
+         *executes in the same frame as the release.*/
+        lv_indev_scroll_throw_handler(indev);
+        lv_anim_refr_now();
+
         if(indev_reset_check(indev)) return;
     }
 }
