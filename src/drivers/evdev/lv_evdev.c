@@ -161,6 +161,8 @@ static void _evdev_read(lv_indev_t * indev, lv_indev_data_t * data)
     lv_evdev_t * dsc = lv_indev_get_driver_data(indev);
     LV_ASSERT_NULL(dsc);
 
+    int wheel_diff = 0;
+
     /*Update dsc with buffered events*/
     struct input_event in = { 0 };
     ssize_t br;
@@ -168,6 +170,7 @@ static void _evdev_read(lv_indev_t * indev, lv_indev_data_t * data)
         if(in.type == EV_REL) {
             if(in.code == REL_X) dsc->root_x += in.value;
             else if(in.code == REL_Y) dsc->root_y += in.value;
+            else if(in.code == REL_WHEEL) wheel_diff += in.value;
         }
         else if(in.type == EV_ABS) {
 #if LV_USE_GESTURE_RECOGNITION
@@ -338,6 +341,10 @@ static void _evdev_read(lv_indev_t * indev, lv_indev_data_t * data)
             data->state = dsc->state;
             data->point = _evdev_process_pointer(indev, dsc->root_x, dsc->root_y);
 #endif
+            break;
+        case LV_INDEV_TYPE_ENCODER:
+            data->state = LV_INDEV_STATE_RELEASED;
+            data->enc_diff = -wheel_diff;
             break;
         default:
             break;
